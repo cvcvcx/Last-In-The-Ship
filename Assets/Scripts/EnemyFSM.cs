@@ -12,6 +12,7 @@ public class EnemyFSM : MonoBehaviour
     private float targetRecognitionRange = 8;
     [SerializeField]
     private float pursuitLimitRange = 10;
+    private float rotateSpeed = 10;
 
     [Header("Attack")]
     [SerializeField]
@@ -30,15 +31,17 @@ public class EnemyFSM : MonoBehaviour
     private NavMeshAgent navMeshAgent;
     private Transform target;
     private EnemyMemoryPool enemyMemoryPool;
-
+    private EnemyAnimatorController animator;
     
     //private void Awake()
     public void Setup(Transform target,EnemyMemoryPool enemyMemoryPool)
     {
         status = GetComponent<Status>();
+        animator = GetComponentInChildren<EnemyAnimatorController>();
         navMeshAgent = GetComponent<NavMeshAgent>();
         this.target = target;
         this.enemyMemoryPool = enemyMemoryPool;
+        
 
         navMeshAgent.updateRotation = false;
     }
@@ -83,6 +86,7 @@ public class EnemyFSM : MonoBehaviour
         float maxTime = 10;
 
         navMeshAgent.speed = status.WalkSpeed;
+        animator.MoveSpeed = Mathf.Lerp(animator.MoveSpeed, 0.5f, 0.5f);
         navMeshAgent.SetDestination(CalculateWanderPosition());
 
         Vector3 to = new Vector3(navMeshAgent.destination.x, 0, navMeshAgent.destination.z);
@@ -94,6 +98,7 @@ public class EnemyFSM : MonoBehaviour
 
             to = new Vector3(navMeshAgent.destination.x, 0, navMeshAgent.destination.z);
             from =  new Vector3(transform.position.x, 0, transform.position.z);
+            
             if ((to - from).sqrMagnitude < 0.01f || currentTime >= maxTime) 
             {
                 ChangeState(EnemyState.Idle);
@@ -137,7 +142,9 @@ public class EnemyFSM : MonoBehaviour
         while (true)
         {
             navMeshAgent.speed = status.RunSpeed;
+            animator.MoveSpeed = Mathf.Lerp(animator.MoveSpeed, 1.0f, 0.1f);
             navMeshAgent.SetDestination(target.position);
+            
             LookRotationToTarget();
             CalculateDistanceToTargetAndSelectState();
             yield return null;
@@ -146,6 +153,8 @@ public class EnemyFSM : MonoBehaviour
     private IEnumerator Attack()
     {
         navMeshAgent.ResetPath();
+        animator.MoveSpeed = 0.0f;
+        navMeshAgent.speed = 0.0f;
         while (true)
         {
             LookRotationToTarget();
@@ -153,7 +162,7 @@ public class EnemyFSM : MonoBehaviour
             if(Time.time - lastAttackTime > attackRate)
             {
                 lastAttackTime = Time.time;
-
+                animator.Play("Shooting", -1, 0);
                 GameObject clone = Instantiate(projectilePrefab, projectileSpawnPoint.position, projectileSpawnPoint.rotation);
                 clone.GetComponent<EnemyProjectile>().Setup(target.position);
             }
@@ -164,10 +173,10 @@ public class EnemyFSM : MonoBehaviour
     {
         Vector3 to = new Vector3(target.position.x, 0, target.position.z);
         Vector3 from = new Vector3(transform.position.x, 0, transform.position.z);
-        transform.rotation = Quaternion.LookRotation(to - from);
+        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(to - from), rotateSpeed * Time.deltaTime);
 
-//        Quaternion rotation = Quaternion.LookRotation(to - from);
-  //      transform.rotation = Quaternion.Slerp(transform.rotation, rotation, 0.01f);
+        //        Quaternion rotation = Quaternion.LookRotation(to - from);
+        //      transform.rotation = Quaternion.Slerp(transform.rotation, rotation, 0.01f);
     }
     private void CalculateDistanceToTargetAndSelectState()
     {
