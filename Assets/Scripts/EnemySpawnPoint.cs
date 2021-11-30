@@ -9,7 +9,7 @@ public class EnemySpawnPoint : MonoBehaviour
     private MeshRenderer meshRenderer;
     private void Awake()
     {
-        meshRenderer = GetComponent<MeshRenderer>();
+        meshRenderer = GetComponentInChildren<MeshRenderer>();
     }
     private void OnEnable()
     {

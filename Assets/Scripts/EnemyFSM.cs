@@ -213,8 +213,8 @@ public class EnemyFSM : MonoBehaviour
     {
         bool isDie = status.DecreaseHP(damage);
         if(isDie== true)
-        {
-            enemyMemoryPool.DeactivateEnemy(gameObject);
+        {            
+            enemyMemoryPool.DestroyEnemy(gameObject);
         }
     }
 }

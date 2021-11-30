@@ -1,9 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class EnemyMemoryPool : MonoBehaviour
 {
+    private readonly List<GameObject> enemies = new List<GameObject>();
     [SerializeField]
     private Transform target;
     [SerializeField]
@@ -14,57 +16,59 @@ public class EnemyMemoryPool : MonoBehaviour
     private float enemySpawnTime = 1;
     [SerializeField]
     private float enemySpawnLatency = 1;
-
+    
+    
     private MemoryPool spawnPointMemoryPool;
     private MemoryPool enemyMemoryPool;
 
     private int numberOfEnemiesSpawnedAtOnce = 1;
-    private Vector2Int mapSize = new Vector2Int(100, 100);
-
+    private int wave=0;
+    public Transform[] spawnPoints;
+    
     private void Awake()
     {
         spawnPointMemoryPool = new MemoryPool(enemySpawnPointPrefab);
         enemyMemoryPool = new MemoryPool(enemyPrefab);
 
-        StartCoroutine("SpawnTile");
+        
     }
-
-    private IEnumerator SpawnTile()
+    private void Update()
     {
-        int currentNumber = 0;
-        int maximumNumber = 50;
 
-        while (true)
+
+        if (enemies.Count <= 0)
         {
-            for (int i = 0; i < numberOfEnemiesSpawnedAtOnce; ++i)
-            {
-                GameObject item = spawnPointMemoryPool.ActivatePoolItem();
-                item.transform.position = new Vector3(Random.Range(-mapSize.x * 0.49f, mapSize.x * 0.49f), 1, Random.Range(-mapSize.y * 0.49f, mapSize.y * 0.49f));
-                StartCoroutine("SpawnEnemy", item);
-            }
-            currentNumber++;
-
-            if (currentNumber >= maximumNumber)
-            {
-                currentNumber = 0;
-                numberOfEnemiesSpawnedAtOnce++;
-            }
-            yield return new WaitForSeconds(enemySpawnTime);
+            if (Input.GetKeyDown(KeyCode.Return))
+            SpawnWave();
         }
     }
-    private IEnumerator SpawnEnemy(GameObject point)
+
+    private void SpawnWave()
     {
-        yield return new WaitForSeconds(enemySpawnLatency);
+        wave++;
 
-        GameObject item = enemyMemoryPool.ActivatePoolItem();
-        item.transform.position = point.transform.position-new Vector3(0,1,0);
-        item.GetComponent<EnemyFSM>().Setup(target,this);
+        var spawnCount = Mathf.RoundToInt(wave * 5);
 
-        spawnPointMemoryPool.DeactivatePoolItem(point);
+        for (int i = 0; i < spawnCount; i++)
+        {
+            SpawnEnemy();
+        }
     }
-    public void DeactivateEnemy(GameObject enemy)
+    private void SpawnEnemy()
     {
-        enemyMemoryPool.DeactivatePoolItem(enemy);
+        var spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
+
+        GameObject item = Instantiate(enemyPrefab, spawnPoint.position, spawnPoint.rotation);
+        
+        item.GetComponent<EnemyFSM>().Setup(target.transform,this);
+        enemies.Add(item);
+
+        
+    }
+    public void DestroyEnemy(GameObject enemy)
+    {
+        Destroy(enemy);
+        enemies.Remove(enemy);
     }
    
 }
