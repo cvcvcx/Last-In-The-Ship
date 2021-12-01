@@ -2,10 +2,24 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using TMPro;
 
 public class PlayerHUD : MonoBehaviour
 {
+
+    private static PlayerHUD instance;
+
+    public static PlayerHUD Instance
+    {
+        get
+        {
+            if (instance == null) instance = FindObjectOfType<PlayerHUD>();
+
+            return instance;
+        }
+    }
+
     private WeaponBase weapon;
     [Header("Components")]
     
@@ -44,6 +58,11 @@ public class PlayerHUD : MonoBehaviour
     [SerializeField]
     private AnimationCurve curveBloodScreen;
 
+    [Header("Score & Wave& GameOver UI")]
+    [SerializeField] private TextMeshProUGUI scoreText;
+    [SerializeField] private TextMeshProUGUI waveText;
+    [SerializeField] private GameObject gameoverUI;
+
 
     private void Awake()
     {
@@ -74,6 +93,21 @@ public class PlayerHUD : MonoBehaviour
     private void UpdateAmmoHUD(int currentAmmo, int maxAmmo)
     {
         textAmmo.text = $"<size=40>{currentAmmo}/</size>{maxAmmo}";
+    }
+
+    public void UpdateScoreText(int newScore)
+    {
+        scoreText.text = "Score : " + newScore;
+    }
+
+    public void UpdateWaveText(int waves, int count)
+    {
+        waveText.text = "Wave : " + waves + "\nEnemy Left : " + count;
+    }
+
+    public void SetActiveGameoverUI(bool active)
+    {
+        gameoverUI.SetActive(active);
     }
 
     private void SetupMagazine()
@@ -108,6 +142,11 @@ public class PlayerHUD : MonoBehaviour
             StopCoroutine("OnBloodScreen");
             StartCoroutine("OnBloodScreen");
         }
+    }
+
+    public void GameRestart()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     private IEnumerator OnBloodScreen()

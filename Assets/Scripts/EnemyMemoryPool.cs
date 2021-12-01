@@ -35,12 +35,16 @@ public class EnemyMemoryPool : MonoBehaviour
     private void Update()
     {
 
-
+        UpdateUI();
         if (enemies.Count <= 0)
         {
             if (Input.GetKeyDown(KeyCode.Return))
             SpawnWave();
         }
+    }
+    private void UpdateUI()
+    {
+        PlayerHUD.Instance.UpdateWaveText(wave, enemies.Count);
     }
 
     private void SpawnWave()
@@ -71,6 +75,7 @@ public class EnemyMemoryPool : MonoBehaviour
     {
         Destroy(enemy);
         enemies.Remove(enemy);
+        GameManager.Instance.AddScore(100);
     }
    
 }
