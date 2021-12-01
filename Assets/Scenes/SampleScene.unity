@@ -4774,6 +4774,16 @@ PrefabInstance:
       propertyPath: m_StaticEditorFlags
       value: 4294967295
       objectReference: {fileID: 0}
+    - target: {fileID: 8049236293148970308, guid: 7de6cc461a92b534c843f8d629763fb0,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8049236293148970308, guid: 7de6cc461a92b534c843f8d629763fb0,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 9.468
+      objectReference: {fileID: 0}
     - target: {fileID: 8263268329741250228, guid: 7de6cc461a92b534c843f8d629763fb0,
         type: 3}
       propertyPath: m_StaticEditorFlags
@@ -4942,8 +4952,8 @@ CharacterController:
   serializedVersion: 2
   m_Height: 2
   m_Radius: 0.3
-  m_SlopeLimit: 45
-  m_StepOffset: 0.3
+  m_SlopeLimit: 70
+  m_StepOffset: 0.7
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
