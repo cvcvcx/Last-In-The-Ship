@@ -7,6 +7,8 @@ using UnityEngine.AI;
 public enum EnemyState { None= -1, Idle =0, Wander,Pursuit,Attack,}
 public class EnemyFSM : MonoBehaviour
 {
+
+
     [Header("Pursuit")]
     [SerializeField]
     private float targetRecognitionRange = 8;
@@ -32,18 +34,30 @@ public class EnemyFSM : MonoBehaviour
     private Transform target;
     private EnemyMemoryPool enemyMemoryPool;
     private EnemyAnimatorController animator;
-    
+    private bool lookAt=false;
+    public EnemyState EnemyState{ get;private set; }
+
     //private void Awake()
     public void Setup(Transform target,EnemyMemoryPool enemyMemoryPool)
     {
         status = GetComponent<Status>();
         animator = GetComponentInChildren<EnemyAnimatorController>();
+        animator.target = target;        
         navMeshAgent = GetComponent<NavMeshAgent>();
         this.target = target;
         this.enemyMemoryPool = enemyMemoryPool;
         
 
         navMeshAgent.updateRotation = false;
+    }
+    private void LateUpdate()
+    {
+        if (lookAt)
+            animator.SpineLookAt();
+        else
+            animator.Wander();
+
+
     }
     private void OnEnable()
     {
@@ -61,6 +75,7 @@ public class EnemyFSM : MonoBehaviour
         StopCoroutine(enemyState.ToString());
         enemyState = newState;
         StartCoroutine(enemyState.ToString());
+        
     }
 
     private IEnumerator Idle()
@@ -84,11 +99,10 @@ public class EnemyFSM : MonoBehaviour
     {
         float currentTime = 0;
         float maxTime = 10;
-
+        
         navMeshAgent.speed = status.WalkSpeed;
-        animator.MoveSpeed = Mathf.Lerp(animator.MoveSpeed, 0.5f, 0.5f);
-        navMeshAgent.SetDestination(CalculateWanderPosition());
-
+        animator.MoveSpeed = 0.5f;
+        navMeshAgent.SetDestination(CalculateWanderPosition());        
         Vector3 to = new Vector3(navMeshAgent.destination.x, 0, navMeshAgent.destination.z);
         Vector3 from = new Vector3(transform.position.x, 0, transform.position.z);
         transform.rotation = Quaternion.LookRotation(to - from);
@@ -140,11 +154,11 @@ public class EnemyFSM : MonoBehaviour
     private IEnumerator Pursuit()
     {
         while (true)
+            
         {
             navMeshAgent.speed = status.RunSpeed;
-            animator.MoveSpeed = Mathf.Lerp(animator.MoveSpeed, 1.0f, 0.1f);
+            animator.MoveSpeed = 1.0f;
             navMeshAgent.SetDestination(target.position);
-            
             LookRotationToTarget();
             CalculateDistanceToTargetAndSelectState();
             yield return null;
@@ -157,12 +171,15 @@ public class EnemyFSM : MonoBehaviour
         navMeshAgent.speed = 0.0f;
         while (true)
         {
-            LookRotationToTarget();
+
+            
+
             CalculateDistanceToTargetAndSelectState();
             if(Time.time - lastAttackTime > attackRate)
             {
                 lastAttackTime = Time.time;
-                animator.Play("Shooting", -1, 0);
+                animator.Attack();
+                LookRotationToTarget();
                 GameObject clone = Instantiate(projectilePrefab, projectileSpawnPoint.position, projectileSpawnPoint.rotation);
                 clone.GetComponent<EnemyProjectile>().Setup(target.position);
             }
@@ -173,7 +190,7 @@ public class EnemyFSM : MonoBehaviour
     {
         Vector3 to = new Vector3(target.position.x, 0, target.position.z);
         Vector3 from = new Vector3(transform.position.x, 0, transform.position.z);
-        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(to - from), rotateSpeed * Time.deltaTime);
+        transform.rotation =Quaternion.LookRotation(to - from);
 
         //        Quaternion rotation = Quaternion.LookRotation(to - from);
         //      transform.rotation = Quaternion.Slerp(transform.rotation, rotation, 0.01f);
@@ -184,14 +201,17 @@ public class EnemyFSM : MonoBehaviour
         float distance = Vector3.Distance(target.position, transform.position);
         if(distance<= attackRange)
         {
+            lookAt = true;
             ChangeState(EnemyState.Attack);
         } 
         else if(distance<= targetRecognitionRange)
         {
+            lookAt = true;
             ChangeState(EnemyState.Pursuit);
         }
         else if (distance >= pursuitLimitRange)
         {
+            lookAt = false;
             ChangeState(EnemyState.Wander);
         }
     }

@@ -51,11 +51,13 @@ public class EnemyMemoryPool : MonoBehaviour
 
         for (int i = 0; i < spawnCount; i++)
         {
-            SpawnEnemy();
+            StartCoroutine("SpawnEnemy");
         }
     }
-    private void SpawnEnemy()
+    private IEnumerator SpawnEnemy()
     {
+        yield return new WaitForSeconds(3.0f);
+
         var spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
 
         GameObject item = Instantiate(enemyPrefab, spawnPoint.position, spawnPoint.rotation);
