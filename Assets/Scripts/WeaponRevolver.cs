@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using System.Linq;
 public class WeaponRevolver : WeaponBase
 {
-
+	List<GameObject> shootableEnemy = new List<GameObject>();
 	
 	[Header("Fire Effects")]
 	[SerializeField]
@@ -81,62 +81,8 @@ public class WeaponRevolver : WeaponBase
 			StartCoroutine("OnModeChange");
 		}
     }
-    private void Update()
-    {		
-        if (Input.GetKeyDown(KeyCode.Y))
-        {
-			if(IsAutoAimMode== false)
-            {
-				StartCoroutine(UpdateTarget());
-				isAutoAimMode = true;
-            }
-            else
-            {
-				StopCoroutine(UpdateTarget());
-				isAutoAimMode = false;
-            }
-				LockOnTarget();
-        }
-		
 
-		
-    }
-
-private IEnumerator UpdateTarget()
-	{
-		
-		while (!GameManager.Instance.isGameOver)
-		{
-			if (hasTarget)
-			{
-				LockOnTarget();
-			}
-			else
-			{
-				if (autoAimtarget != null) autoAimtarget = null;
-				var colliders = Physics.OverlapSphere(transform.position, 100f, whatIsTarget);
-
-				foreach(var collider in colliders)
-                {
-					if (!IsTargetOnSight(collider.transform)) break;
-					float shortestDistance = Mathf.Infinity;
-					GameObject nearestEnemy = null;
-					
-						float distanceToEnemy = Vector3.Distance(transform.position, collider.transform.position);
-						if (distanceToEnemy < shortestDistance)
-						{
-							shortestDistance = distanceToEnemy;
-							nearestEnemy = collider.gameObject;
-						}
-					autoAimtarget = nearestEnemy;
-					
-				}				
-			}
-		}
-		yield return new WaitForSeconds(0.2f); 
-
-	}
-
+	
 	private bool IsTargetOnSight(Transform target)
 	{
 		RaycastHit hit;
@@ -269,8 +215,7 @@ private IEnumerator UpdateTarget()
 		float percent = 0;
 		float time = 0.35f;
 		animator.AimModeIs = !animator.AimModeIs;
-		imageAim.enabled = !imageAim.enabled;
-		Time.timeScale = 1.0f;
+		imageAim.enabled = !imageAim.enabled;		
 		float start = mainCamera.fieldOfView;
 		
 		
@@ -292,13 +237,7 @@ private IEnumerator UpdateTarget()
 
 
 	
-	void LockOnTarget()
-	{
-		Vector3 dir = autoAimtarget.transform.position - transform.position;
-		Quaternion lookRotation = Quaternion.LookRotation(dir);
-		Vector3 rotation = Quaternion.Lerp(transform.parent.rotation, lookRotation, Time.deltaTime * 10.0f).eulerAngles;
-		transform.parent.rotation = Quaternion.Euler(rotation.x, rotation.y, rotation.z);
-	}
+	
 
 	private void ResetVariables()
     {
