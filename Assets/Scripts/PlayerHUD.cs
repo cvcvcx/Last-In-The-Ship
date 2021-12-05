@@ -62,6 +62,8 @@ public class PlayerHUD : MonoBehaviour
     [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] private TextMeshProUGUI waveText;
     [SerializeField] private GameObject gameoverUI;
+    [SerializeField] private GameObject waveEnterStart;
+    [SerializeField] private GameObject clearUI;
 
 
     private void Awake()
@@ -108,6 +110,14 @@ public class PlayerHUD : MonoBehaviour
     public void SetActiveGameoverUI(bool active)
     {
         gameoverUI.SetActive(active);
+    } 
+    public void SetActiveEnterStartWaveUI(bool active)
+    {
+        waveEnterStart.SetActive(active);
+    }
+    public void SetActiveClearUI(bool active)
+    {
+        clearUI.SetActive(active);
     }
 
     private void SetupMagazine()

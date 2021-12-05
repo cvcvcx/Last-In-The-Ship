@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    
     [Header("Input KeyCodes")]
     [SerializeField]
     private KeyCode keyCodeRun = KeyCode.LeftShift;
@@ -20,6 +21,7 @@ public class PlayerController : MonoBehaviour
     private MovementCharacterController movement;
     private Status status;    
     private AudioSource audioSource;
+    private bool isDie;
     private WeaponBase weapon;
     private void Awake()
     {
@@ -35,17 +37,22 @@ public class PlayerController : MonoBehaviour
 }
     private void Update()
     {
+        GameManager.Instance.UpdatePauseGame();
+        if (GameManager.Instance.isPause== true) return;        
+        if (GameManager.Instance.isGameClear== true) return;  
+        //불렛타임일때 움직일수없고, 로테이트도 고정한상태에서 적에게 총 발사
+        UpdateWeaponAction();
+        if (weapon.IsAutoAimMode) return;
         UpdateRotate();
         UpdateMove();
         UpdateJump();
-        UpdateWeaponAction();
     }
     private void UpdateRotate()
     {
         float mouseX = Input.GetAxis("Mouse X");
         float mouseY = Input.GetAxis("Mouse Y");
 
-        rotateToMouse.UpdateRotate(mouseX, mouseY);
+        rotateToMouse.UpdateRotate(mouseX,mouseY);
     }
     private void UpdateMove()
     {
@@ -115,12 +122,17 @@ public class PlayerController : MonoBehaviour
     }
     public  void TakeDamage(int damage)
     {
-        bool isDie = status.DecreaseHP(damage);
+        isDie = status.DecreaseHP(damage);
         if(isDie == true)
         {
+            GameManager.Instance.isPause = true;
+            GameManager.Instance.Pause();
+            GameManager.Instance.DieMenuSetActive(true);
             Debug.Log("GameOver");
         }
     }
+   
+    
     public void SwitchingWeapon(WeaponBase newWeapon)
     {
         weapon = newWeapon;

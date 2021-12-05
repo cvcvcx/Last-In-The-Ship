@@ -5,26 +5,23 @@ using UnityEngine.AI;
 
 public class EnemyMemoryPool : MonoBehaviour
 {
-    private readonly List<GameObject> enemies = new List<GameObject>();
+    
+    public static readonly List<GameObject> enemies = new List<GameObject>();
     [SerializeField]
     private Transform target;
     [SerializeField]
     private GameObject enemySpawnPointPrefab;
     [SerializeField]
     private GameObject enemyPrefab;
-    [SerializeField]
-    private float enemySpawnTime = 1;
-    [SerializeField]
-    private float enemySpawnLatency = 1;
+
     
     
     private MemoryPool spawnPointMemoryPool;
-    private MemoryPool enemyMemoryPool;
-
-    private int numberOfEnemiesSpawnedAtOnce = 1;
-    private int wave=0;
+    private MemoryPool enemyMemoryPool;        
+    static private int wave=0;
     public Transform[] spawnPoints;
     
+    static public int Wave { get { return wave; }   set{ wave = value; } }
     private void Awake()
     {
         spawnPointMemoryPool = new MemoryPool(enemySpawnPointPrefab);
@@ -35,17 +32,23 @@ public class EnemyMemoryPool : MonoBehaviour
     private void Update()
     {
 
+
         UpdateUI();
         if (enemies.Count <= 0)
         {
+            PlayerHUD.Instance.SetActiveEnterStartWaveUI(true);
             if (Input.GetKeyDown(KeyCode.Return))
-            SpawnWave();
+            {
+                SpawnWave();
+            }
         }
     }
     private void UpdateUI()
     {
         PlayerHUD.Instance.UpdateWaveText(wave, enemies.Count);
     }
+
+    
 
     private void SpawnWave()
     {
@@ -61,7 +64,7 @@ public class EnemyMemoryPool : MonoBehaviour
     private IEnumerator SpawnEnemy()
     {
         yield return new WaitForSeconds(3.0f);
-
+        PlayerHUD.Instance.SetActiveEnterStartWaveUI(false);
         var spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
 
         GameObject item = Instantiate(enemyPrefab, spawnPoint.position, spawnPoint.rotation);
@@ -71,11 +74,25 @@ public class EnemyMemoryPool : MonoBehaviour
 
         
     }
+
+  
     public void DestroyEnemy(GameObject enemy)
     {
         Destroy(enemy);
-        enemies.Remove(enemy);
+        enemies.Remove(enemy);        
         GameManager.Instance.AddScore(100);
     }
-   
+
+
+
+    static public void DestroyAllEnemy()
+    {
+        for (int i = 0; i < enemies.Count; i++)
+        {
+            Destroy(enemies[i]);
+
+        }            
+            enemies.Clear();
+    }
+
 }

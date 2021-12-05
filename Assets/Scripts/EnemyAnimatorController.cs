@@ -45,8 +45,7 @@ public class EnemyAnimatorController : MonoBehaviour
     }
  
     public void Attack()
-    {
-        animator.SetTrigger("Attack");
+    {        animator.SetTrigger("Attack");
 
     } 
 

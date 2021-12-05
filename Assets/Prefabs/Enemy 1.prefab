@@ -41,8 +41,10 @@ GameObject:
   - component: {fileID: 4968555808496588828}
   - component: {fileID: 4968555808496588819}
   - component: {fileID: 4968555808496588816}
+  - component: {fileID: 8153849447714061547}
   - component: {fileID: 4968555808496588817}
   - component: {fileID: 4968555808496588818}
+  - component: {fileID: 6035364024574065241}
   m_Layer: 0
   m_Name: Enemy 1
   m_TagString: ImpactEnemy
@@ -99,6 +101,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a38600e4ed5ea14a87236e3afe99f22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  audioClipFire: {fileID: 8300000, guid: 38b450e2adcb6f542acc8c1d423bd8dc, type: 3}
+  attackedClip: {fileID: 8300000, guid: ed569e12cbaf5864f8bfd459fffd8bbe, type: 3}
+  deadClip: {fileID: 8300000, guid: d84596744b3a5664eae2056a4bea3212, type: 3}
   targetRecognitionRange: 8
   pursuitLimitRange: 10
   projectilePrefab: {fileID: 8252095180336864287, guid: 456aba1942b71ec48976eb62e0c5bb85,
@@ -106,6 +111,19 @@ MonoBehaviour:
   projectileSpawnPoint: {fileID: 4968555806945350154}
   attackRange: 5
   attackRate: 1
+  myMesh: {fileID: 4103368523296666868}
+--- !u!114 &8153849447714061547
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4968555808496588829}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af1c931274e2598459a5894af9d86dcd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &4968555808496588817
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -140,6 +158,102 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 126
   m_CollisionDetection: 0
+--- !u!82 &6035364024574065241
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4968555808496588829}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 1
+  m_Volume: 0.25
+  m_Pitch: 1.7
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!136 &4968555808580922027
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -167,10 +281,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 0}
-  targetPursuitAttack: {fileID: 0}
-  targetWander: {fileID: 0}
   relativeVec: {x: -80, y: 15, z: 0}
+  offsetVec: {x: 0, y: 0, z: 0}
   spine: {fileID: 3072877490009340885}
+  oriSpine: {x: 0, y: 0, z: 0, w: 0}
   lookAt: 0
 --- !u!1001 &4968555807226615722
 PrefabInstance:
@@ -280,6 +394,12 @@ GameObject:
 --- !u!4 &4862025385083088961 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: e26c6e5a6cb64604eb748ce31a70a2fb,
+    type: 3}
+  m_PrefabInstance: {fileID: 4968555807226615722}
+  m_PrefabAsset: {fileID: 0}
+--- !u!137 &4103368523296666868 stripped
+SkinnedMeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 8935648264140596062, guid: e26c6e5a6cb64604eb748ce31a70a2fb,
     type: 3}
   m_PrefabInstance: {fileID: 4968555807226615722}
   m_PrefabAsset: {fileID: 0}

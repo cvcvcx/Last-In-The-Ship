@@ -7,6 +7,15 @@ using UnityEngine.AI;
 public enum EnemyState { None= -1, Idle =0, Wander,Pursuit,Attack,}
 public class EnemyFSM : MonoBehaviour
 {
+    public static List<GameObject> enemyBullets = new List<GameObject>();
+
+    [Header("Audio Clips")]    
+    [SerializeField]
+    public AudioClip audioClipFire;
+    [SerializeField]
+    public AudioClip attackedClip;
+    [SerializeField]
+    public AudioClip deadClip;
 
 
     [Header("Pursuit")]
@@ -22,18 +31,22 @@ public class EnemyFSM : MonoBehaviour
     [SerializeField]
     private Transform projectileSpawnPoint;
     [SerializeField]
-    private float attackRange = 5;
+    private float attackRange = 7;
     [SerializeField]
     private float attackRate = 1;
 
     private EnemyState enemyState = EnemyState.None;
     private float lastAttackTime = 0;
 
+    [SerializeField]
+    private SkinnedMeshRenderer myMesh;
+
     private Status status;
     private NavMeshAgent navMeshAgent;
     private Transform target;
     private EnemyMemoryPool enemyMemoryPool;
     private EnemyAnimatorController animator;
+    private AudioSource audioSource;    
     private bool lookAt=false;
     public EnemyState EnemyState{ get;private set; }
 
@@ -44,12 +57,13 @@ public class EnemyFSM : MonoBehaviour
         animator = GetComponentInChildren<EnemyAnimatorController>();
         animator.target = target;        
         navMeshAgent = GetComponent<NavMeshAgent>();
-        this.target = target;
+        this.target = target;        
         this.enemyMemoryPool = enemyMemoryPool;
-        
+        audioSource = GetComponent<AudioSource>();
 
         navMeshAgent.updateRotation = false;
     }
+    
     private void LateUpdate()
     {
         if (lookAt)
@@ -101,7 +115,12 @@ public class EnemyFSM : MonoBehaviour
         float maxTime = 10;
         
         navMeshAgent.speed = status.WalkSpeed;
-        animator.MoveSpeed = 0.5f;
+        animator.MoveSpeed = 0.5f;        
+        if (audioSource.isPlaying==false)
+        {
+            audioSource.loop = true;
+            audioSource.Play();
+        }
         navMeshAgent.SetDestination(CalculateWanderPosition());        
         Vector3 to = new Vector3(navMeshAgent.destination.x, 0, navMeshAgent.destination.z);
         Vector3 from = new Vector3(transform.position.x, 0, transform.position.z);
@@ -181,6 +200,10 @@ public class EnemyFSM : MonoBehaviour
                 animator.Attack();
                 LookRotationToTarget();
                 GameObject clone = Instantiate(projectilePrefab, projectileSpawnPoint.position, projectileSpawnPoint.rotation);
+                enemyBullets.Add(clone);
+                audioSource.volume = 0.25f;
+                audioSource.PlayOneShot(audioClipFire);
+                
                 clone.GetComponent<EnemyProjectile>().Setup(target.position);
             }
             yield return null;
@@ -231,10 +254,14 @@ public class EnemyFSM : MonoBehaviour
     }
     public void TakeDamage(int damage)
     {
+        audioSource.volume = 1.0f;
         bool isDie = status.DecreaseHP(damage);
-        if(isDie== true)
+        audioSource.PlayOneShot(attackedClip);
+        if (isDie== true)
         {            
+            audioSource.PlayOneShot(deadClip);
             enemyMemoryPool.DestroyEnemy(gameObject);
         }
     }
+   
 }

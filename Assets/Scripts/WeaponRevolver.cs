@@ -1,10 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI;
+using System.Linq;
 public class WeaponRevolver : WeaponBase
 {
 
+	
 	[Header("Fire Effects")]
 	[SerializeField]
 	private GameObject muzzleFlashEffect;
@@ -21,10 +23,32 @@ public class WeaponRevolver : WeaponBase
 	[SerializeField]
 	private AudioClip audioClipReload;
 
+	[Header("Aim UI")]
+	[SerializeField]
+	private Image imageAim;
+
+	private GameObject autoAimtarget;
+	public string enemyTag = "ImpactEnemy";
+
+	public LayerMask whatIsTarget; // 추적 대상 레이어
+
+
+
+	Quaternion oriQua;
+	private float defaultModeFov = 60;
+	private float aimModeFov = 60;	
+	
+
+	public static bool isBulletAttack;
+	//나중에 수정할것
+
 	private ImpactMemoryPool impactMemoryPool;
 	private Camera mainCamera;
+	PlayerController playerController;
 
-    private void OnEnable()
+	private bool hasTarget => autoAimtarget != null;
+
+	private void OnEnable()
     {
 		PlaySound(audioClipTakeOutWeapon);
 		muzzleFlashEffect.SetActive(false);
@@ -35,25 +59,110 @@ public class WeaponRevolver : WeaponBase
     private void Awake()
     {
 		base.Setup();
-
+		playerController = GetComponentInParent<PlayerController>();
 		impactMemoryPool = GetComponent<ImpactMemoryPool>();
-		mainCamera = Camera.main;
-
+		mainCamera = Camera.main;		
 		weaponSetting.currentMagazine = weaponSetting.maxMagazine;
 		weaponSetting.currentAmmo = weaponSetting.maxAmmo;
 			
     }
+    
 
     public override void StartWeaponAction(int type = 0)
     {
-        if(type ==0&& isAttack == false && isReload == false)
-        {
-			OnAttack();
-        }
+		if (isReload == true) return;
+		if (isModeChange == true) return;
+		if (type == 0)
+		{
+				OnAttack();
+		}
+		else
+		{			
+			StartCoroutine("OnModeChange");
+		}
     }
+    private void Update()
+    {		
+        if (Input.GetKeyDown(KeyCode.Y))
+        {
+			if(IsAutoAimMode== false)
+            {
+				StartCoroutine(UpdateTarget());
+				isAutoAimMode = true;
+            }
+            else
+            {
+				StopCoroutine(UpdateTarget());
+				isAutoAimMode = false;
+            }
+				LockOnTarget();
+        }
+		
+
+		
+    }
+
+private IEnumerator UpdateTarget()
+	{
+		
+		while (!GameManager.Instance.isGameOver)
+		{
+			if (hasTarget)
+			{
+				LockOnTarget();
+			}
+			else
+			{
+				if (autoAimtarget != null) autoAimtarget = null;
+				var colliders = Physics.OverlapSphere(transform.position, 100f, whatIsTarget);
+
+				foreach(var collider in colliders)
+                {
+					if (!IsTargetOnSight(collider.transform)) break;
+					float shortestDistance = Mathf.Infinity;
+					GameObject nearestEnemy = null;
+					
+						float distanceToEnemy = Vector3.Distance(transform.position, collider.transform.position);
+						if (distanceToEnemy < shortestDistance)
+						{
+							shortestDistance = distanceToEnemy;
+							nearestEnemy = collider.gameObject;
+						}
+					autoAimtarget = nearestEnemy;
+					
+				}				
+			}
+		}
+		yield return new WaitForSeconds(0.2f); 
+
+	}
+
+	private bool IsTargetOnSight(Transform target)
+	{
+		RaycastHit hit;
+
+		var direction = target.position - transform.position;
+
+		direction.y = transform.forward.y;
+
+		if (Vector3.Angle(direction, transform.forward) > 50.0f * 0.5f)
+		{
+			return false;
+		}
+
+		if (Physics.Raycast(transform.position, direction, out hit, whatIsTarget))
+		{
+			if (hit.transform == target) return true;
+		}
+
+		return false;
+	}
+
 	public void OnAttack()
 	{
-		if (Time.time - lastAttackTime > weaponSetting.attackRate)
+
+		if (isBulletAttack == true) return;
+		 if (Time.time - lastAttackTime > weaponSetting.attackRate)
 		{
 			if (animator.MoveSpeed > 0.5f)
 			{
@@ -63,22 +172,28 @@ public class WeaponRevolver : WeaponBase
 			{
 				return;
 			}
+
 			lastAttackTime = Time.time;
 			weaponSetting.currentAmmo--;
 			onAmmoEvent.Invoke(weaponSetting.currentAmmo, weaponSetting.maxAmmo);
 			//animator.Play("Fire", -1, 0);
-			string animation = animator.AimModeIs == true ? "AimFire" : "Fire";
-			animator.Play(animation, -1, 0);
-			StartCoroutine("OnMuzzleFlashEffect");
-			PlaySound(audioClipFire);			
+			Attack();
 			TwoStepRaycast();
 
 		}
 	}
+	private void Attack() 
+	{
+		string animation = animator.AimModeIs == true ? "AimFire" : "Fire";
+		animator.Play(animation, -1, 0);
+		StartCoroutine("OnMuzzleFlashEffect");
+		PlaySound(audioClipFire);
+		
+	}
 	private IEnumerator OnMuzzleFlashEffect()
 	{
 		muzzleFlashEffect.SetActive(true);
-		yield return new WaitForSeconds(weaponSetting.attackRate * 0.3f);
+		yield return new WaitForSeconds(weaponSetting.attackRate * 0.1f);
 		muzzleFlashEffect.SetActive(false);
 	}
 	private IEnumerator OnReload()
@@ -88,7 +203,7 @@ public class WeaponRevolver : WeaponBase
 		PlaySound(audioClipReload);
 		while (true)
 		{
-			if (audioSource.isPlaying == false && animator.CurrentAnimationIs("Movement"))
+			if (animator.CurrentAnimationIs("Movement"))//오디오 플레이 중일때도 리로드 가능하게 함
 			{
 				isReload = false;
 
@@ -121,8 +236,13 @@ public class WeaponRevolver : WeaponBase
 
 		Vector3 attackDirection = (targetPoint - bulletSpawnPoint.position).normalized;
 		if (Physics.Raycast(bulletSpawnPoint.position, attackDirection, out hit, weaponSetting.attackDistance))
-		{
+		{			
 			impactMemoryPool.SpawnImpact(hit);
+            if (hit.transform.GetComponent<EnemyProjectile>() != null)
+            {
+				EnemyProjectile enemyBullet = hit.transform.GetComponent<EnemyProjectile>();
+				enemyBullet.DestoryProjectile();
+            }
 			if (hit.transform.CompareTag("ImpactEnemy"))
 			{
 				hit.transform.GetComponent<EnemyFSM>().TakeDamage(weaponSetting.damage);
@@ -131,6 +251,7 @@ public class WeaponRevolver : WeaponBase
 		Debug.DrawRay(bulletSpawnPoint.position, attackDirection * weaponSetting.attackDistance, Color.blue);
 	}
 
+	
 	public override void StopWeaponAction(int type = 0)
     {
 		isAttack = false;
@@ -141,6 +262,43 @@ public class WeaponRevolver : WeaponBase
 		StopWeaponAction();
 		StartCoroutine("OnReload");
     }
+	private IEnumerator OnModeChange()
+	{
+				
+		float current = 0;
+		float percent = 0;
+		float time = 0.35f;
+		animator.AimModeIs = !animator.AimModeIs;
+		imageAim.enabled = !imageAim.enabled;
+		Time.timeScale = 1.0f;
+		float start = mainCamera.fieldOfView;
+		
+		
+
+		float end = animator.AimModeIs == true ? aimModeFov : defaultModeFov;		
+		isModeChange = true;		
+		while (percent < 1)
+		{
+
+			current += Time.deltaTime;
+			percent = current / time;
+			mainCamera.fieldOfView = Mathf.Lerp(start, end, percent);		
+			
+			yield return null;
+		}		
+		if(percent>=1) isModeChange = false;
+        
+	}
+
+
+	
+	void LockOnTarget()
+	{
+		Vector3 dir = autoAimtarget.transform.position - transform.position;
+		Quaternion lookRotation = Quaternion.LookRotation(dir);
+		Vector3 rotation = Quaternion.Lerp(transform.parent.rotation, lookRotation, Time.deltaTime * 10.0f).eulerAngles;
+		transform.parent.rotation = Quaternion.Euler(rotation.x, rotation.y, rotation.z);
+	}
 
 	private void ResetVariables()
     {

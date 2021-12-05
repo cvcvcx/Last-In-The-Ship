@@ -23,7 +23,7 @@ public abstract class WeaponBase : MonoBehaviour
     protected bool isReload = false;
     protected bool isAttack = false;
     protected bool isModeChange = false;
-
+    protected bool isAutoAimMode = false;
     protected AudioSource audioSource;
     protected PlayerAnimatorController animator;
 
@@ -40,7 +40,7 @@ public abstract class WeaponBase : MonoBehaviour
     public abstract void StartWeaponAction(int type = 0);
     public abstract void StopWeaponAction(int type = 0);
     public abstract void StartReload();
-
+    public bool IsAutoAimMode { get { return isAutoAimMode; } protected set { isAutoAimMode = value; } }
     protected void PlaySound(AudioClip clip)
     {
         audioSource.Stop();

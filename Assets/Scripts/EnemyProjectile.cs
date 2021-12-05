@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class EnemyProjectile : MonoBehaviour
 {
+    
     private MovementTransform movement;
     private float projectileDistance = 30;
     private int damage = 5;
@@ -21,7 +22,7 @@ public class EnemyProjectile : MonoBehaviour
         {
             if (Vector3.Distance(transform.position, start) >= projectileDistance)
             {
-                Destroy(gameObject);
+                DestoryProjectile();
                 yield break;
             }
             yield return null;
@@ -33,7 +34,13 @@ public class EnemyProjectile : MonoBehaviour
         {
             other.GetComponent<PlayerController>().TakeDamage(damage);
 
-            Destroy(gameObject);
+            DestoryProjectile();
         }
      }
+    public void DestoryProjectile()
+    {
+        EnemyFSM.enemyBullets.Remove(gameObject);
+        
+        Destroy(gameObject);
+    }
 }

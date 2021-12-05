@@ -62,24 +62,30 @@ public class WeaponAssaultRifle : WeaponBase
 		if (isReload == true) return;
 
 		if (isModeChange == true) return;
-		if(type == 0)
-		{
-			if(weaponSetting.isAutomaticAttack == true)
+		
+			if (weaponSetting.isAutomaticAttack == true)
+			{
+			if (type == 0)
 			{
 				isAttack = true;
 				StartCoroutine("OnAttackLoop");
 			}
 			else
 			{
-				OnAttack();
+				if (isAttack == true) return;
+				
+					StopCoroutine("OnReload");
+					StartCoroutine("OnModeChange");
+				
 			}
-		}
-        else
-        {
-			if (isAttack == true) return;
-			StartCoroutine("OnModeChange");
-        }
+			}
+			else
+			{
+					OnAttack();
+			}
+		
 	}
+	
 	public override void StopWeaponAction(int type = 0)
 	{
 		if(type == 0)
@@ -91,7 +97,7 @@ public class WeaponAssaultRifle : WeaponBase
 
 	public override void StartReload()
 	{
-		if (isReload == true||weaponSetting.currentMagazine<=0) return;
+		if (isReload == true&&weaponSetting.currentMagazine<=0) return;
 		StopWeaponAction();
 		StartCoroutine("OnReload");
 	}
@@ -125,6 +131,7 @@ public class WeaponAssaultRifle : WeaponBase
 			PlaySound(audioClipFire);
 			casingMemoryPool.SpawnCasing(casingSpawnPoint.position, transform.right);
 			TwoStepRaycast();
+			isAttack = false;
 
 		}
 	}
@@ -141,15 +148,15 @@ public class WeaponAssaultRifle : WeaponBase
 		PlaySound(audioClipReload);
 		while (true)
 		{
-			if(audioSource.isPlaying == false&& animator.CurrentAnimationIs("Movement"))
+			if(animator.CurrentAnimationIs("Movement"))
 			{
-				isReload = false;
 
 				weaponSetting.currentMagazine--;
 				onMagazineEvent.Invoke(weaponSetting.currentMagazine);
 
 				weaponSetting.currentAmmo = weaponSetting.maxAmmo;
 				onAmmoEvent.Invoke(weaponSetting.currentAmmo, weaponSetting.maxAmmo);
+				isReload = false;
 				yield break;
 			}
 			yield return null;
