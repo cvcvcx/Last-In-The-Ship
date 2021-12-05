@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+  
     
     [Header("Input KeyCodes")]
     [SerializeField]
@@ -22,7 +23,11 @@ public class PlayerController : MonoBehaviour
     private Status status;    
     private AudioSource audioSource;
     private bool isDie;
+    private bool isAutoAim = false;
     private WeaponBase weapon;
+    
+
+    public bool IsAutoAim { get { return isAutoAim; } set { isAutoAim = value; } }
     private void Awake()
     {
         Cursor.visible = false;
@@ -39,14 +44,17 @@ public class PlayerController : MonoBehaviour
     {
         GameManager.Instance.UpdatePauseGame();
         if (GameManager.Instance.isPause== true) return;        
-        if (GameManager.Instance.isGameClear== true) return;  
+        if (GameManager.Instance.isGameClear== true) return;
+        if (Input.GetKeyDown(KeyCode.Y)) isAutoAim = !isAutoAim;
         //불렛타임일때 움직일수없고, 로테이트도 고정한상태에서 적에게 총 발사
-        UpdateWeaponAction();        
-        UpdateRotate();
+        UpdateWeaponAction();
         UpdateMove();
         UpdateJump();
+        if(isAutoAim == false)
+        UpdateRotate();
+       
     }
-    private void UpdateRotate()
+    private  void UpdateRotate()
     {
         float mouseX = Input.GetAxis("Mouse X");
         float mouseY = Input.GetAxis("Mouse Y");

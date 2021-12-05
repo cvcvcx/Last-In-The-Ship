@@ -31,9 +31,7 @@ public class WeaponRevolver : WeaponBase
 	public string enemyTag = "ImpactEnemy";
 
 	public LayerMask whatIsTarget; // 추적 대상 레이어
-
-	private bool isAimMode = false;
-
+	
 	Quaternion oriQua;
 	private float defaultModeFov = 60;
 	private float aimModeFov = 60;	
@@ -49,6 +47,7 @@ public class WeaponRevolver : WeaponBase
 
 	private void OnEnable()
     {
+		
 		PlaySound(audioClipTakeOutWeapon);
 		muzzleFlashEffect.SetActive(false);
 		onMagazineEvent.Invoke(weaponSetting.currentMagazine);
@@ -57,9 +56,10 @@ public class WeaponRevolver : WeaponBase
 	}
     private void Awake()
     {
-		base.Setup();
+		base.Setup();		
 		playerController = GetComponentInParent<PlayerController>();
 		impactMemoryPool = GetComponent<ImpactMemoryPool>();
+
 		mainCamera = Camera.main;		
 		weaponSetting.currentMagazine = weaponSetting.maxMagazine;
 		weaponSetting.currentAmmo = weaponSetting.maxAmmo;
@@ -74,37 +74,16 @@ public class WeaponRevolver : WeaponBase
 
 		if (type == 0)
 		{
-			StartCoroutine(AimModeAttack());
-			
+			OnAttack();
+
 		}
 		else
 		{
-
-			SetTargetInAimMode();
+			StartCoroutine("OnModeChange");
 		}
     }
 
-	
-	private bool IsTargetOnSight(Transform target)
-	{
-		RaycastHit hit;
-
-		var direction = target.position - transform.position;
-
-		direction.y = transform.forward.y;
-
-		if (Vector3.Angle(direction, transform.forward) > 50.0f * 0.5f)
-		{
-			return false;
-		}
-
-		if (Physics.Raycast(transform.position, direction, out hit, whatIsTarget))
-		{
-			if (hit.transform == target) return true;
-		}
-
-		return false;
-	}
+   
 
 	public void OnAttack()
 	{
@@ -198,21 +177,7 @@ public class WeaponRevolver : WeaponBase
 		Debug.DrawRay(bulletSpawnPoint.position, attackDirection * weaponSetting.attackDistance, Color.blue);
 	}
 
-	private void AimModeRayCast(Vector3 targetPoint)
-    {
-		RaycastHit hit;
-		Vector3 attackDirection = (targetPoint - bulletSpawnPoint.position).normalized;
-		if (Physics.Raycast(bulletSpawnPoint.position, attackDirection, out hit, weaponSetting.attackDistance))
-		{
-			impactMemoryPool.SpawnImpact(hit);
-			
-			if (hit.transform.CompareTag("ImpactEnemy"))
-			{
-				hit.transform.GetComponent<EnemyFSM>().TakeDamage(weaponSetting.damage);
-			}
-		}
 
-	}
 
 	public override void StopWeaponAction(int type = 0)
     {
@@ -224,7 +189,50 @@ public class WeaponRevolver : WeaponBase
 		StopWeaponAction();
 		StartCoroutine("OnReload");
     }
-	private IEnumerator OnModeChange()
+
+    
+    private void Update()
+	{
+
+        if (playerController.IsAutoAim) {
+			if (EnemyMemoryPool.enemies.Count > 0)
+			{
+				float radius = 8;
+				Collider[] cols = Physics.OverlapSphere(transform.position, radius, whatIsTarget);
+				GameObject clossedEnemy = null;
+				float closestDistance = Mathf.Infinity;
+
+				if (cols != null)
+				{
+					foreach (Collider col in cols)
+					{
+						float distance = Vector3.Distance(col.transform.position, transform.parent.position);
+						if (distance < closestDistance)
+						{
+							closestDistance = distance;
+							clossedEnemy = col.gameObject;
+						}
+					}
+					if (clossedEnemy != null)
+					{
+						Vector3 dir = clossedEnemy.transform.position + Vector3.up - transform.parent.position;
+						transform.parent.rotation = Quaternion.Lerp(transform.parent.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 10f);
+                    }
+                    else
+                    {
+						playerController.IsAutoAim = false;
+					}
+				}
+			}
+			else
+            {
+				playerController.IsAutoAim = false;
+            }
+			
+		}
+    }
+
+    private IEnumerator OnModeChange()
 	{
 				
 		float current = 0;
@@ -232,8 +240,7 @@ public class WeaponRevolver : WeaponBase
 		float time = 0.35f;
 		animator.AimModeIs = !animator.AimModeIs;
 		imageAim.enabled = !imageAim.enabled;		
-		float start = mainCamera.fieldOfView;
-		isAimMode = !isAimMode;
+		float start = mainCamera.fieldOfView;		
 		
 
 		float end = animator.AimModeIs == true ? aimModeFov : defaultModeFov;		
@@ -251,31 +258,7 @@ public class WeaponRevolver : WeaponBase
         
 	}
 
-	private void SetTargetInAimMode()
-	{
-		while (isAimMode == true)
-		{
-			for (int i = 0; i < EnemyMemoryPool.enemies.Count; i++)
-			{
-				if (IsTargetOnSight(EnemyMemoryPool.enemies[i].transform))
-				{
-					shootableEnemy.Add(EnemyMemoryPool.enemies[i]);
-				}
 
-			}
-		}
-    }
-	//시야에 보이는 애들을 리스트화해서 저장
-	
-	private IEnumerator AimModeAttack()
-    {
-        for (int i = 0; i < shootableEnemy.Count; i++)
-        {
-			transform.parent.LookAt(shootableEnemy[i].transform);
-			AimModeRayCast(shootableEnemy[i].transform.position);
-			yield return new WaitForSeconds(0.2f);
-        }
-    }
 	
 
 	private void ResetVariables()

@@ -8667,6 +8667,11 @@ PrefabInstance:
       objectReference: {fileID: 316612}
     - target: {fileID: 5899504344690583967, guid: a23a6acc208dad241bbffc0039cd27c9,
         type: 3}
+      propertyPath: whatIsTarget.m_Bits
+      value: 1024
+      objectReference: {fileID: 0}
+    - target: {fileID: 5899504344690583967, guid: a23a6acc208dad241bbffc0039cd27c9,
+        type: 3}
       propertyPath: weaponSetting.damage
       value: 100
       objectReference: {fileID: 0}

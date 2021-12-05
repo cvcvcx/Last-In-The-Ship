@@ -95,4 +95,27 @@ public class EnemyMemoryPool : MonoBehaviour
             enemies.Clear();
     }
 
+ 
+
+    private bool IsTargetOnSight(Transform target)
+    {
+        RaycastHit hit;
+
+        var direction = target.position - transform.position;
+
+        direction.y = transform.forward.y;
+
+        if (Vector3.Angle(direction, transform.forward) > 50.0f * 0.5f)
+        {
+            return false;
+        }
+
+        if (Physics.Raycast(transform.position, direction, out hit))
+        {
+            if (hit.transform == target) return true;
+        }
+
+        return false;
+    }
+
 }
