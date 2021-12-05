@@ -41,8 +41,7 @@ public class PlayerController : MonoBehaviour
         if (GameManager.Instance.isPause== true) return;        
         if (GameManager.Instance.isGameClear== true) return;  
         //불렛타임일때 움직일수없고, 로테이트도 고정한상태에서 적에게 총 발사
-        UpdateWeaponAction();
-        if (weapon.IsAutoAimMode) return;
+        UpdateWeaponAction();        
         UpdateRotate();
         UpdateMove();
         UpdateJump();
