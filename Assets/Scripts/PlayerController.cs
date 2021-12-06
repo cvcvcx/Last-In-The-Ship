@@ -49,8 +49,7 @@ public class PlayerController : MonoBehaviour
         //불렛타임일때 움직일수없고, 로테이트도 고정한상태에서 적에게 총 발사
         UpdateWeaponAction();
         UpdateMove();
-        UpdateJump();
-        if(isAutoAim == false)
+        UpdateJump();        
         UpdateRotate();
        
     }

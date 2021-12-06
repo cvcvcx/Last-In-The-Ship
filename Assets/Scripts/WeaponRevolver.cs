@@ -6,6 +6,7 @@ using System.Linq;
 public class WeaponRevolver : WeaponBase
 {
 	List<GameObject> shootableEnemy = new List<GameObject>();
+	IAimAssistable AimAssistable;
 	
 	[Header("Fire Effects")]
 	[SerializeField]
@@ -30,7 +31,7 @@ public class WeaponRevolver : WeaponBase
 	
 	public string enemyTag = "ImpactEnemy";
 
-	public LayerMask whatIsTarget; // 추적 대상 레이어
+	
 	
 	Quaternion oriQua;
 	private float defaultModeFov = 60;
@@ -42,7 +43,7 @@ public class WeaponRevolver : WeaponBase
 
 	private ImpactMemoryPool impactMemoryPool;
 	private Camera mainCamera;
-	PlayerController playerController;
+	
 	
 
 	private void OnEnable()
@@ -56,9 +57,8 @@ public class WeaponRevolver : WeaponBase
 	}
     private void Awake()
     {
-		base.Setup();		
-		playerController = GetComponentInParent<PlayerController>();
-		impactMemoryPool = GetComponent<ImpactMemoryPool>();
+		base.Setup();				
+		impactMemoryPool = GetComponent<ImpactMemoryPool>();		
 
 		mainCamera = Camera.main;		
 		weaponSetting.currentMagazine = weaponSetting.maxMagazine;
@@ -190,47 +190,7 @@ public class WeaponRevolver : WeaponBase
 		StartCoroutine("OnReload");
     }
 
-    
-    private void Update()
-	{
-
-        if (playerController.IsAutoAim) {
-			if (EnemyMemoryPool.enemies.Count > 0)
-			{
-				float radius = 8;
-				Collider[] cols = Physics.OverlapSphere(transform.position, radius, whatIsTarget);
-				GameObject clossedEnemy = null;
-				float closestDistance = Mathf.Infinity;
-
-				if (cols != null)
-				{
-					foreach (Collider col in cols)
-					{
-						float distance = Vector3.Distance(col.transform.position, transform.parent.position);
-						if (distance < closestDistance)
-						{
-							closestDistance = distance;
-							clossedEnemy = col.gameObject;
-						}
-					}
-					if (clossedEnemy != null)
-					{
-						Vector3 dir = clossedEnemy.transform.position + Vector3.up - transform.parent.position;
-						transform.parent.rotation = Quaternion.Lerp(transform.parent.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 10f);
-                    }
-                    else
-                    {
-						playerController.IsAutoAim = false;
-					}
-				}
-			}
-			else
-            {
-				playerController.IsAutoAim = false;
-            }
-			
-		}
-    }
+ 
 
     private IEnumerator OnModeChange()
 	{
