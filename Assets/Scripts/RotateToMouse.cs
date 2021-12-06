@@ -43,7 +43,7 @@ public class RotateToMouse : MonoBehaviour
                 }
                 else
                 {
-                    transform.rotation = Quaternion.Euler(eulerAngleX, eulerAngleY, 0);
+                    transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(eulerAngleX, eulerAngleY, 0), Time.deltaTime * 5.0f) ;
                 }
             }
         }
@@ -58,7 +58,8 @@ public class RotateToMouse : MonoBehaviour
         eulerAngleX = ClampAngle(eulerAngleX, limitMinX, limitMaxX);
 
         if(playerController.IsAutoAim==false)
-        transform.rotation = Quaternion.Euler(eulerAngleX, eulerAngleY, 0);
+           transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(eulerAngleX, eulerAngleY, 0), Time.deltaTime * 10.0f) ;
+        
     }
 
     private float ClampAngle(float angle, float min, float max)
