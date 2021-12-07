@@ -83,7 +83,7 @@ public class PlayerController : MonoBehaviour
         if (GameManager.Instance.isGameClear == true) return;
         if (canAutoAim&&isSlowMode==false)
         {
-            if (Input.GetKeyDown(KeyCode.Y))
+            if (Input.GetKeyDown(KeyCode.E))
             {
                 IsAutoAim = true;
                 StartCoroutine(OnFeverMode(10.0f));
@@ -91,7 +91,7 @@ public class PlayerController : MonoBehaviour
         }
         if (canSlowMode&&isAutoAim==false)
         {
-            if (Input.GetKeyDown(KeyCode.T))
+            if (Input.GetKeyDown(KeyCode.G))
             {
                 StartCoroutine(OnSlowMode(5.0f));
             }
@@ -197,6 +197,7 @@ public class PlayerController : MonoBehaviour
     IEnumerator FeverModeCoolTime(float cool)
     {
 
+
         while (cool > 0.1f)
             //1초보다 많이 남아있으면, 스킬 쿨타임이 점점 줄어듬
         {
@@ -213,13 +214,15 @@ public class PlayerController : MonoBehaviour
     {
         isAutoAim = true;
         image_UsingAutoAim.SetActive(true);
+        Time.timeScale = 1.5f;
         //오토에임 스타트
         while (time > 0.1f)
         {
-            time -= Time.deltaTime;
+            time -= Time.unscaledDeltaTime;
             yield return new WaitForFixedUpdate();
         }//유지시간 측정
         isAutoAim = false;
+        Time.timeScale = 1.0f;
         image_AutoAim_Skill.SetActive(false);
         image_AutoAim_CoolTime_GameObj.SetActive(true);
         image_UsingAutoAim.SetActive(false);
@@ -230,14 +233,16 @@ public class PlayerController : MonoBehaviour
     IEnumerator OnSlowMode(float time)
     {
         isSlowMode = true;
+        Time.timeScale = 0.2f;
         image_UsingSlowMode.SetActive(true);
         //슬로우 스타트
         while (time > 0.1f)
         {
-            time -= Time.deltaTime;
+            time -= Time.unscaledDeltaTime;
             yield return new WaitForFixedUpdate();
         }//유지시간 측정
         isSlowMode = false;
+        Time.timeScale = 1.0f;
         image_SlowMode_Skill.SetActive(false);
         image_SlowMode_CoolTime_Skill_GameObj.SetActive(true);
         image_UsingSlowMode.SetActive(false);

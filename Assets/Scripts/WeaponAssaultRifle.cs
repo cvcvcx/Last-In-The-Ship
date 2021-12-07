@@ -97,7 +97,7 @@ public class WeaponAssaultRifle : WeaponBase
 
 	public override void StartReload()
 	{
-		if (isReload == true&&weaponSetting.currentMagazine<=0) return;
+		if (isReload == true&&weaponSetting.currentMagazine<=0||weaponSetting.currentAmmo == weaponSetting.maxAmmo) return;
 		StopWeaponAction();
 		StartCoroutine("OnReload");
 	}
@@ -112,11 +112,7 @@ public class WeaponAssaultRifle : WeaponBase
 	public void OnAttack()
 	{
 		if(Time.time - lastAttackTime > weaponSetting.attackRate)
-		{
-			if (animator.MoveSpeed > 0.5f)
-			{
-				return;
-			}
+		{			
 			if (weaponSetting.currentAmmo <= 0)
 			{
 				return;
@@ -216,7 +212,11 @@ public class WeaponAssaultRifle : WeaponBase
             {
 				hit.transform.GetComponent<EnemyFSM>().TakeDamage(weaponSetting.damage);
             }
-        }
+			if (hit.transform.CompareTag("EnemyBullet"))
+			{
+				hit.transform.GetComponent<EnemyProjectile>().DestoryProjectile();
+			}
+		}
 		Debug.DrawRay(bulletSpawnPoint.position, attackDirection * weaponSetting.attackDistance, Color.blue);
     }
 }

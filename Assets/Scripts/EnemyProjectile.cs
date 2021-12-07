@@ -17,7 +17,7 @@ public class EnemyProjectile : MonoBehaviour
     private IEnumerator OnMove(Vector3 targetPosition)
     {
         Vector3 start = transform.position;
-        movement.MoveTo((targetPosition - transform.position).normalized);
+        movement.MoveTo((targetPosition - transform.position).normalized*0.5f);
         while (true)
         {
             if (Vector3.Distance(transform.position, start) >= projectileDistance)

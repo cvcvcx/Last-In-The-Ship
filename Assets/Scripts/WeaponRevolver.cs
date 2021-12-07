@@ -88,18 +88,15 @@ public class WeaponRevolver : WeaponBase
 	public void OnAttack()
 	{
 				
-		 if (Time.time - lastAttackTime > weaponSetting.attackRate)
+		 if (Time.unscaledTime - lastAttackTime > weaponSetting.attackRate)
 		{
-			if (animator.MoveSpeed > 0.5f)
-			{
-				return;
-			}
+			
 			if (weaponSetting.currentAmmo <= 0)
 			{
 				return;
 			}
 
-			lastAttackTime = Time.time;
+			lastAttackTime = Time.unscaledTime;
 			weaponSetting.currentAmmo--;
 			onAmmoEvent.Invoke(weaponSetting.currentAmmo, weaponSetting.maxAmmo);
 			//animator.Play("Fire", -1, 0);
@@ -173,6 +170,10 @@ public class WeaponRevolver : WeaponBase
 			{
 				hit.transform.GetComponent<EnemyFSM>().TakeDamage(weaponSetting.damage);
 			}
+			if (hit.transform.CompareTag("EnemyBullet"))
+			{
+				hit.transform.GetComponent<EnemyProjectile>().DestoryProjectile();
+			}
 		}
 		Debug.DrawRay(bulletSpawnPoint.position, attackDirection * weaponSetting.attackDistance, Color.blue);
 	}
@@ -185,7 +186,7 @@ public class WeaponRevolver : WeaponBase
     }
     public override void StartReload()
     {
-		if (isReload == true || weaponSetting.currentMagazine <= 0) return;
+		if (isReload == true && weaponSetting.currentMagazine <= 0 || weaponSetting.currentAmmo == weaponSetting.maxAmmo) return;
 		StopWeaponAction();
 		StartCoroutine("OnReload");
     }
