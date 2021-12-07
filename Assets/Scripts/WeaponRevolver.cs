@@ -6,7 +6,7 @@ using System.Linq;
 public class WeaponRevolver : WeaponBase
 {
 	List<GameObject> shootableEnemy = new List<GameObject>();
-	IAimAssistable AimAssistable;
+	
 	
 	[Header("Fire Effects")]
 	[SerializeField]
