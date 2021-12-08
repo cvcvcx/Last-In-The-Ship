@@ -9988,6 +9988,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 551349315}
     m_Modifications:
+    - target: {fileID: 8433064809341623437, guid: 9f7dafba4cd7b5044b15f9095b19f3aa,
+        type: 3}
+      propertyPath: m_fontSize
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 8433064809341623437, guid: 9f7dafba4cd7b5044b15f9095b19f3aa,
+        type: 3}
+      propertyPath: m_fontSizeBase
+      value: 100
+      objectReference: {fileID: 0}
     - target: {fileID: 8433064809358505099, guid: 9f7dafba4cd7b5044b15f9095b19f3aa,
         type: 3}
       propertyPath: m_IsActive

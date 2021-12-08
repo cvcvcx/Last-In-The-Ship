@@ -53,7 +53,7 @@ public class PlayerController : MonoBehaviour
     private bool isDie;
     public static bool isEnemyDead = false;
     private bool isAutoAim = false;
-    private bool isSlowMode = false;
+    static public bool isSlowMode = false;
     private bool canAutoAim = false;
     private bool canSlowMode = true;
 

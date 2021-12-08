@@ -70,6 +70,10 @@ public class GameManager : MonoBehaviour
         isPause = false;
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
+        if (PlayerController.isSlowMode)
+        {
+            Time.timeScale = 0.2f;
+        }else
         Time.timeScale = 1.0f;
         
     }
