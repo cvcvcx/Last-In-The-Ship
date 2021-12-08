@@ -51,14 +51,19 @@ public class PlayerController : MonoBehaviour
     private TextMeshProUGUI text_SlowMode_CoolTime;
 
     private bool isDie;
+    public static bool isEnemyDead = false;
     private bool isAutoAim = false;
     private bool isSlowMode = false;
     private bool canAutoAim = false;
     private bool canSlowMode = true;
+
+    private float feverModeCoolTime = 30.0f;
     private WeaponBase weapon;
 
+    
 
     public bool IsAutoAim { get { return isAutoAim; } set { isAutoAim = value; } }
+    public bool IsSlowMode { get { return isSlowMode; } set { isSlowMode = value; } }
     private void Awake()
     {
         Cursor.visible = false;
@@ -73,7 +78,7 @@ public class PlayerController : MonoBehaviour
     }
     private void Start()
     {
-       StartCoroutine(FeverModeCoolTime(5.0f));
+       StartCoroutine(FeverModeCoolTime(feverModeCoolTime));
         
     }
     private void Update()
@@ -89,11 +94,18 @@ public class PlayerController : MonoBehaviour
                 StartCoroutine(OnFeverMode(10.0f));
             }
         }
-        if (canSlowMode&&isAutoAim==false)
+        if (isAutoAim==false)
         {
             if (Input.GetKeyDown(KeyCode.G))
             {
-                StartCoroutine(OnSlowMode(5.0f));
+                if(isSlowMode == true)
+                {
+                    StopSlowMode();
+                }
+                else
+                {
+                    OnSlowMode();
+                }
             }
         }
         //불렛타임일때 움직일수없고, 로테이트도 고정한상태에서 적에게 총 발사
@@ -105,8 +117,8 @@ public class PlayerController : MonoBehaviour
     }
     private void UpdateRotate()
     {
-        float mouseX = Input.GetAxis("Mouse X");
-        float mouseY = Input.GetAxis("Mouse Y");
+        float mouseX = Input.GetAxisRaw("Mouse X");
+        float mouseY = Input.GetAxisRaw("Mouse Y");
 
         rotateToMouse.UpdateRotate(mouseX, mouseY);
     }
@@ -201,6 +213,11 @@ public class PlayerController : MonoBehaviour
         while (cool > 0.1f)
             //1초보다 많이 남아있으면, 스킬 쿨타임이 점점 줄어듬
         {
+            if (isEnemyDead == true)
+            {
+                isEnemyDead = false;
+                cool -= 1.0f;
+            }
             cool -= Time.deltaTime;
             image_AutoAim_CoolTime_Skill.fillAmount = (1.0f / cool);
             text_AutoAim_CoolTime.text = Mathf.Round(cool).ToString();
@@ -215,6 +232,7 @@ public class PlayerController : MonoBehaviour
         isAutoAim = true;
         image_UsingAutoAim.SetActive(true);
         Time.timeScale = 1.5f;
+
         //오토에임 스타트
         while (time > 0.1f)
         {
@@ -228,27 +246,24 @@ public class PlayerController : MonoBehaviour
         image_UsingAutoAim.SetActive(false);
 
         //오토에임 끔
-        StartCoroutine(FeverModeCoolTime(5.0f));
+        StartCoroutine(FeverModeCoolTime(feverModeCoolTime));
     }  
-    IEnumerator OnSlowMode(float time)
+    void OnSlowMode()
     {
         isSlowMode = true;
         Time.timeScale = 0.2f;
         image_UsingSlowMode.SetActive(true);
-        //슬로우 스타트
-        while (time > 0.1f)
-        {
-            time -= Time.unscaledDeltaTime;
-            yield return new WaitForFixedUpdate();
-        }//유지시간 측정
-        isSlowMode = false;
-        Time.timeScale = 1.0f;
-        image_SlowMode_Skill.SetActive(false);
-        image_SlowMode_CoolTime_Skill_GameObj.SetActive(true);
-        image_UsingSlowMode.SetActive(false);
+     
+      
         //슬로우모드 끔
-        StartCoroutine(SlowModeCoolTime(5.0f));
     } 
+
+    void StopSlowMode()
+    {
+        isSlowMode = false;
+        image_UsingSlowMode.SetActive(false);
+        Time.timeScale = 1.0f;
+    }
     IEnumerator SlowModeCoolTime(float cool)
     {
         while (cool > 0.1f)

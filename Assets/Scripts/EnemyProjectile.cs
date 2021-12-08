@@ -7,7 +7,7 @@ public class EnemyProjectile : MonoBehaviour
     
     private MovementTransform movement;
     private float projectileDistance = 30;
-    private int damage = 5;
+    private int damage = 20;
     public void Setup(Vector3 position)
     {
         movement = GetComponent<MovementTransform>();

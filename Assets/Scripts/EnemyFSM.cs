@@ -261,6 +261,7 @@ public class EnemyFSM : MonoBehaviour
         {            
             audioSource.PlayOneShot(deadClip);
             enemyMemoryPool.DestroyEnemy(gameObject);
+            PlayerController.isEnemyDead = true;
         }
     }
    

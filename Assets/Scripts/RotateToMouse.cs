@@ -7,7 +7,7 @@ public class RotateToMouse : MonoBehaviour
     [SerializeField]
     private float rotCamXAxisSpeed = 5;
     [SerializeField]
-    private float rotCamYAxisSpeed = 3;    
+    private float rotCamYAxisSpeed = 3;
     private float limitMinX = -80;
     private float limitMaxX = 50;
     private float eulerAngleX;
@@ -17,15 +17,17 @@ public class RotateToMouse : MonoBehaviour
     public void UpdateRotate(float mouseX, float mouseY)
     {
 
-       
+
 
         eulerAngleY += mouseX * rotCamYAxisSpeed;
         eulerAngleX -= mouseY * rotCamXAxisSpeed;
 
         eulerAngleX = ClampAngle(eulerAngleX, limitMinX, limitMaxX);
+        if (playerController.IsSlowMode)
+            transform.localRotation = Quaternion.Euler(eulerAngleX, eulerAngleY, 0);
 
         if (playerController.IsAutoAim == false)
-            transform.rotation = Quaternion.Euler(eulerAngleX, eulerAngleY, 0);
+            transform.localRotation = Quaternion.Lerp(transform.localRotation, Quaternion.Euler(eulerAngleX, eulerAngleY, 0), Time.deltaTime * 20f);
         else
         {
 
@@ -50,21 +52,26 @@ public class RotateToMouse : MonoBehaviour
                     if (clossedEnemy != null)
                     {
                         Vector3 dir = clossedEnemy.transform.position + Vector3.up - transform.position;
-
-                        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(dir), Time.deltaTime * 10f);
+                        dir.Normalize();
+                        var difference = dir - transform.forward;
+                        float vectorOffset = difference.magnitude;
+                        var localDifference = transform.InverseTransformDirection(dir);
+                        transform.localRotation = Quaternion.Lerp(transform.localRotation, Quaternion.LookRotation(dir), Time.deltaTime * 10f);
                     }
                     else
                     {
-                        transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(eulerAngleX, eulerAngleY, 0), Time.deltaTime * 5.0f);
+                        transform.localRotation = Quaternion.Lerp(transform.localRotation, Quaternion.Euler(eulerAngleX, eulerAngleY, 0), Time.deltaTime * 5f); 
                     }
 
                 }
 
             }
-            else
+            else            
             {
-                transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.Euler(eulerAngleX, eulerAngleY, 0), Time.deltaTime * 5.0f);
+                transform.localRotation = Quaternion.Lerp(transform.localRotation, Quaternion.Euler(eulerAngleX, eulerAngleY, 0), Time.deltaTime * 5f);
+                
             }
+           
         }
 
 
@@ -75,6 +82,16 @@ public class RotateToMouse : MonoBehaviour
         if (angle < -360) angle += 360;
         if (angle > 360) angle -= 360;
         return Mathf.Clamp(angle, min, max);
+    }
+
+    IEnumerator ChangeToMouseAim()
+    {
+        while (Quaternion.Angle(transform.localRotation,Quaternion.Euler(eulerAngleX,eulerAngleY,0))>1f)
+        {
+            transform.localRotation = Quaternion.Lerp(transform.localRotation, Quaternion.Euler(eulerAngleX, eulerAngleY, 0), Time.deltaTime * 10.0f);
+        }
+        transform.localRotation = Quaternion.Euler(eulerAngleX, eulerAngleY, 0);
+        yield return null;
     }
     private void Start()
     {
